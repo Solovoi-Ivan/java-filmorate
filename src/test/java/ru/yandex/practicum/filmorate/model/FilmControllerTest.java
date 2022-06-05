@@ -1,22 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
-import ru.yandex.practicum.filmorate.FilmorateApplication;
+import ru.yandex.practicum.filmorate.controller.FilmController;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.LocalDate;
-
-import static java.time.Month.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FilmControllerTest {

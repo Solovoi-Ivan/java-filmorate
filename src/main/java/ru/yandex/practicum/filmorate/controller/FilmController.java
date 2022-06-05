@@ -1,9 +1,11 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import static java.time.Month.*;
 
 @Slf4j
 @RestController
-public class FilmController {
+public class FilmController { // Перенес контроллеры в отдельный пакет
     int filmId = 0;
     private final Map<Integer, Film> films = new HashMap<>();
     LocalDate releaseDateLimit = LocalDate.of(1895, DECEMBER, 28);
@@ -25,7 +27,7 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody Film film) {
+    public Film createFilm(@Valid @RequestBody Film film) {
         film = filmValidation(film, "create");
         filmId++;
         film.setId(filmId);
@@ -35,7 +37,7 @@ public class FilmController {
     }
 
     @PutMapping(value = "/films")
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         film = filmValidation(film, "update");
         films.put(film.getId(), film);
         log.info("PUT запрос обработан успешно");

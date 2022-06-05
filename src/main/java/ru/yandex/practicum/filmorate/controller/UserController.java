@@ -1,9 +1,11 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +14,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-public class UserController {
+public class UserController { // Перенес контроллеры в отдельный пакет
     int userId = 0;
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -22,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/users")
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         user = userValidation(user, "create");
         userId++;
         user.setId(userId);
@@ -32,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/users")
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
         user = userValidation(user, "update");
         users.put(user.getId(), user);
         log.info("PUT запрос обработан успешно");
