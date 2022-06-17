@@ -21,7 +21,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count) {
-        List<Film> filmList = filmStorage.getFilmsList();
+        List<Film> filmList = filmStorage.getList();
         Comparator<Film> comparator = (f1, f2) -> f2.getLikesSet().size() - f1.getLikesSet().size();
         filmList.sort(comparator);
         if (filmList.size() > count) {

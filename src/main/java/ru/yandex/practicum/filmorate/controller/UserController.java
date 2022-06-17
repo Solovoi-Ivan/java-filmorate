@@ -24,25 +24,38 @@ public class UserController {
 
     @GetMapping("/users")
     public List<User> getUserList() {
-        return userService.getUserStorage().getUserList();
+        return userService.getUserStorage().getList();
     }
 
     @PostMapping("/users")
-    public User createUser(@Valid @RequestBody User user) {
-        userService.getUserStorage().createUser(userStorageValidation(user, "POST"));
+    public User create(@Valid @RequestBody User user) {
+        userService.getUserStorage().create(userStorageValidation(user, "POST"));
         log.info("POST запрос обработан успешно");
         return user;
     }
 
     @PutMapping("/users")
-    public User updateUser(@Valid @RequestBody User user) {
-        userService.getUserStorage().updateUser(userStorageValidation(user, "PUT"));
+    public User update(@Valid @RequestBody User user) {
+        userService.getUserStorage().update(userStorageValidation(user, "PUT"));
         log.info("PUT запрос обработан успешно");
         return user;
     }
 
+    @DeleteMapping("/users/{userId}")
+    public String delete(@PathVariable int userId) {
+        String text;
+        if (!userService.getUserStorage().getUsers().containsKey(userId)) {
+            text = "Пользователь не найден";
+            log.warn(text);
+            throw new DataNotFoundException(text);
+        } else {
+            userService.getUserStorage().delete(userId);
+            return "Пользователь успешно удален";
+        }
+    }
+
     @GetMapping("/users/{userId}")
-    public User getUser(@PathVariable int userId) {
+    public User get(@PathVariable int userId) {
         String text;
         if (!userService.getUserStorage().getUsers().containsKey(userId)) {
             text = "Пользователь не найден";
@@ -54,15 +67,17 @@ public class UserController {
     }
 
     @PutMapping("/users/{userId}/friends/{friendId}")
-    public void addFriend(@PathVariable int userId, @PathVariable int friendId) {
+    public String addFriend(@PathVariable int userId, @PathVariable int friendId) {
         userServiceValidation(userId, friendId, "PUT");
         userService.addFriend(userId, friendId);
+        return "Друг успешно добавлен";
     }
 
     @DeleteMapping("/users/{userId}/friends/{friendId}")
-    public void removeFriend(@PathVariable int userId, @PathVariable int friendId) {
+    public String removeFriend(@PathVariable int userId, @PathVariable int friendId) {
         userServiceValidation(userId, friendId, "DELETE");
         userService.removeFriend(userId, friendId);
+        return "Друг успешно удален";
     }
 
     @GetMapping("/users/{userId}/friends")

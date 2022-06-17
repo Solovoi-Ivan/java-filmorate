@@ -26,25 +26,38 @@ public class FilmController {
 
     @GetMapping("/films")
     public List<Film> getFilmsList() {
-        return filmService.getFilmStorage().getFilmsList();
+        return filmService.getFilmStorage().getList();
     }
 
     @PostMapping("/films")
-    public Film createFilm(@Valid @RequestBody Film film) {
-        filmService.getFilmStorage().createFilm(filmStorageValidation(film, "create"));
+    public Film create(@Valid @RequestBody Film film) {
+        filmService.getFilmStorage().create(filmStorageValidation(film, "create"));
         log.info("POST запрос обработан успешно");
         return film;
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@Valid @RequestBody Film film) {
-        filmService.getFilmStorage().updateFilm(filmStorageValidation(film, "update"));
+    public Film update(@Valid @RequestBody Film film) {
+        filmService.getFilmStorage().update(filmStorageValidation(film, "update"));
         log.info("PUT запрос обработан успешно");
         return film;
     }
 
+    @DeleteMapping("/films/{filmId}")
+    public String delete(@PathVariable int filmId) {
+        String text;
+        if (!filmService.getFilmStorage().getFilms().containsKey(filmId)) {
+            text = "Фильм не найден";
+            log.warn(text);
+            throw new DataNotFoundException(text);
+        } else {
+            filmService.getFilmStorage().delete(filmId);
+            return "Фильм успешно удален";
+        }
+    }
+
     @GetMapping("/films/{filmId}")
-    public Film getFilm(@PathVariable int filmId) {
+    public Film get(@PathVariable int filmId) {
         String text;
         if (!filmService.getFilmStorage().getFilms().containsKey(filmId)) {
             text = "Фильм не найден";
