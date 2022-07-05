@@ -3,11 +3,15 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -16,104 +20,104 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class FilmorateApplicationTests {
     Film film = new Film();
-    FilmController fc = new FilmController();
     User user = new User();
-    UserController uc = new UserController();
+    UserController uc = new UserController(new UserService(new InMemoryUserStorage()));
+    FilmController fc = new FilmController(uc, new FilmService(new InMemoryFilmStorage()));
 
     @Test
     void createUserEmailValidationTest() {
         user.setEmail("");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
+        assertThrows(ValidationException.class, () -> uc.create(user));
         user.setEmail("a");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
+        assertThrows(ValidationException.class, () -> uc.create(user));
         user.setEmail("a@mail.ru");
-        uc.createUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.create(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void createUserLoginValidationTest() {
         user.setLogin("");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
+        assertThrows(ValidationException.class, () -> uc.create(user));
         user.setLogin(" ");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
+        assertThrows(ValidationException.class, () -> uc.create(user));
         user.setLogin("a");
-        uc.createUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.create(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void createUserNameValidationTest() {
         user.setName("");
-        uc.createUser(user);
-        assertEquals(uc.getUsers().get(user.getId()).getName(), user.getLogin());
+        uc.create(user);
+        assertEquals(uc.getUserService().getUserStorage().getUsers().get(user.getId()).getName(), user.getLogin());
     }
 
     @Test
     void createUserBirthdayValidationTest() {
         user.setBirthday(LocalDate.of(2989, 4, 17));
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
+        assertThrows(ValidationException.class, () -> uc.create(user));
         user.setBirthday(LocalDate.of(1989, 4, 17));
-        uc.createUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.create(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void updateUserEmailValidationTest() {
-        uc.createUser(user);
+        uc.create(user);
         user.setEmail("");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
         user.setEmail("a");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
         user.setEmail("a@mail.ru");
-        uc.updateUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.update(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void updateUserLoginValidationTest() {
-        uc.createUser(user);
+        uc.create(user);
         user.setLogin("");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
         user.setLogin(" ");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
         user.setLogin("a");
-        uc.updateUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.update(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void updateUserNameValidationTest() {
-        uc.createUser(user);
+        uc.create(user);
         user.setName("");
-        uc.updateUser(user);
-        assertEquals(uc.getUsers().get(user.getId()).getName(), user.getLogin());
+        uc.update(user);
+        assertEquals(uc.getUserService().getUserStorage().getUsers().get(user.getId()).getName(), user.getLogin());
     }
 
     @Test
     void updateUserBirthdayValidationTest() {
-        uc.createUser(user);
+        uc.create(user);
         user.setBirthday(LocalDate.of(2989, 4, 17));
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
         user.setBirthday(LocalDate.of(1989, 4, 17));
-        uc.updateUser(user);
-        assertTrue(uc.getUsers().containsValue(user));
+        uc.update(user);
+        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
     }
 
     @Test
     void updateUserIdValidationTest() {
-        uc.createUser(user);
+        uc.create(user);
         user.setId(2);
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+        assertThrows(ValidationException.class, () -> uc.update(user));
     }
 
     @Test
     void createFilmNameValidationTest() {
         film.setName("");
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
+        assertThrows(ValidationException.class, () -> fc.create(film));
         film.setName("a");
-        fc.createFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.create(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
@@ -121,87 +125,87 @@ class FilmorateApplicationTests {
         StringBuilder value = new StringBuilder();
         value.append("a".repeat(201));
         film.setDescription(value.toString());
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
+        assertThrows(ValidationException.class, () -> fc.create(film));
         value = new StringBuilder();
         value.append("a".repeat(200));
         film.setDescription(value.toString());
-        fc.createFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.create(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void createFilmReleaseDateValidationTest() {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
+        assertThrows(ValidationException.class, () -> fc.create(film));
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        fc.createFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.create(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void createFilmDurationValidationTest() {
         film.setDuration(0);
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
+        assertThrows(ValidationException.class, () -> fc.create(film));
         film.setDuration(1);
-        fc.createFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.create(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void updateFilmNameValidationTest() {
-        fc.createFilm(film);
+        fc.create(film);
         film.setName("");
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
+        assertThrows(ValidationException.class, () -> fc.update(film));
         film.setName("a");
-        fc.updateFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.update(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void updateFilmDescriptionValidationTest() {
-        fc.createFilm(film);
+        fc.create(film);
         StringBuilder value = new StringBuilder();
         value.append("a".repeat(201));
         film.setDescription(value.toString());
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
+        assertThrows(ValidationException.class, () -> fc.update(film));
         value = new StringBuilder();
         value.append("a".repeat(200));
         film.setDescription(value.toString());
-        fc.updateFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.update(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void updateFilmReleaseDateValidationTest() {
-        fc.createFilm(film);
+        fc.create(film);
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
+        assertThrows(ValidationException.class, () -> fc.update(film));
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        fc.updateFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.update(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void updateFilmDurationValidationTest() {
-        fc.createFilm(film);
+        fc.create(film);
         film.setDuration(0);
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
+        assertThrows(ValidationException.class, () -> fc.update(film));
         film.setDuration(1);
-        fc.updateFilm(film);
-        assertTrue(fc.getFilms().containsValue(film));
+        fc.update(film);
+        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
     }
 
     @Test
     void updateFilmIdValidationTest() {
-        fc.createFilm(film);
+        fc.create(film);
         film.setId(2);
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
+        assertThrows(ValidationException.class, () -> fc.update(film));
     }
 
     @BeforeEach
     void testEnvironment() {
-        fc.getFilms().clear();
-        uc.getUsers().clear();
+        fc.getFilmService().getFilmStorage().getFilms().clear();
+        uc.getUserService().getUserStorage().getUsers().clear();
 
         film.setName("A");
         film.setDescription("AA");
