@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,50 +25,37 @@ import java.util.Map;
 public class FilmController {
     private final UserController userController;
     private final FilmService filmService;
-    private LocalDate releaseDateLimit = LocalDate.of(1895, 12, 28);
+    private final LocalDate releaseDateLimit = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/films")
     public List<Film> getFilmsList() {
-        return filmService.getFilmStorage().getList();
+        return filmService.getFilmsList();
+    }
+
+    @GetMapping("/films/{filmId}")
+    public Film getFilmById(@PathVariable int filmId) {
+        String text;
+        if (!filmService.getFilmsMap().containsKey(filmId)) {
+            text = "Фильм не найден";
+            log.warn(text);
+            throw new DataNotFoundException(text);
+        } else {
+            return filmService.getFilmById(filmId);
+        }
     }
 
     @PostMapping("/films")
-    public Film create(@Valid @RequestBody Film film) {
-        filmService.getFilmStorage().create(filmStorageValidation(film, "create"));
+    public Film createFilm(@Valid @RequestBody Film film) {
+        film = filmService.createFilm(filmStorageValidation(film, "create"));
         log.info("POST запрос обработан успешно");
         return film;
     }
 
     @PutMapping("/films")
-    public Film update(@Valid @RequestBody Film film) {
-        filmService.getFilmStorage().update(filmStorageValidation(film, "update"));
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        film = filmService.updateFilm(filmStorageValidation(film, "update"));
         log.info("PUT запрос обработан успешно");
         return film;
-    }
-
-    @DeleteMapping("/films/{filmId}")
-    public String delete(@PathVariable int filmId) {
-        String text;
-        if (!filmService.getFilmStorage().getFilms().containsKey(filmId)) {
-            text = "Фильм не найден";
-            log.warn(text);
-            throw new DataNotFoundException(text);
-        } else {
-            filmService.getFilmStorage().delete(filmId);
-            return "Фильм успешно удален";
-        }
-    }
-
-    @GetMapping("/films/{filmId}")
-    public Film get(@PathVariable int filmId) {
-        String text;
-        if (!filmService.getFilmStorage().getFilms().containsKey(filmId)) {
-            text = "Фильм не найден";
-            log.warn(text);
-            throw new DataNotFoundException(text);
-        } else {
-            return filmService.getFilmStorage().getFilms().get(filmId);
-        }
     }
 
     @PutMapping("/films/{filmId}/like/{userId}")
@@ -85,7 +75,7 @@ public class FilmController {
     @GetMapping("/films/popular")
     public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
         String text;
-        if (filmService.getFilmStorage().getFilms().isEmpty()) {
+        if (filmService.getFilmsMap().isEmpty()) {
             text = "Фильмы не найдены";
             log.warn(text);
             throw new DataNotFoundException(text);
@@ -97,9 +87,43 @@ public class FilmController {
         }
     }
 
+    @GetMapping("/genres")
+    public List<Genre> getGenresList() {
+        return new ArrayList<>(filmService.getGenresMap().values());
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenres(@PathVariable int id) {
+        String text;
+        if (!filmService.getGenresMap().containsKey(id)) {
+            text = "Жанр не найден";
+            log.warn(text);
+            throw new DataNotFoundException(text);
+        } else {
+            return filmService.getGenresMap().get(id);
+        }
+    }
+
+    @GetMapping("/mpa")
+    public List<MPA> getMPAList() {
+        return new ArrayList<>(filmService.getMpaRatingMap().values());
+    }
+
+    @GetMapping("/mpa/{id}")
+    public MPA getMPA(@PathVariable int id) {
+        String text;
+        if (!filmService.getMpaRatingMap().containsKey(id)) {
+            text = "МРА рейтинг не найден";
+            log.warn(text);
+            throw new DataNotFoundException(text);
+        } else {
+            return filmService.getMpaRatingMap().get(id);
+        }
+    }
+
     public Film filmStorageValidation(Film film, String task) {
         String text;
-        if (task.equals("update") && !filmService.getFilmStorage().getFilms().containsKey(film.getId())) {
+        if (task.equals("update") && !filmService.getFilmsMap().containsKey(film.getId())) {
             text = "Обновление записи невозможно - фильма с таким id нет";
             log.warn(text);
             throw new DataNotFoundException(text);
@@ -126,12 +150,12 @@ public class FilmController {
 
     public void filmServiceValidation(int filmId, int userId) {
         String text;
-        if (!filmService.getFilmStorage().getFilms().containsKey(filmId)) {
+        if (!filmService.getFilmsMap().containsKey(filmId)) {
             text = "Фильм не найден";
             log.warn(text);
             throw new DataNotFoundException(text);
         }
-        if (!userController.getUserService().getUserStorage().getUsers().containsKey(userId)) {
+        if (!userController.getUserService().getUsersMap().containsKey(userId)) {
             text = "Пользователь не найден";
             log.warn(text);
             throw new DataNotFoundException(text);
@@ -148,17 +172,5 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(final DataNotFoundException e) {
         return Map.of("error", "NOT FOUND", "message", e.getMessage());
-    }
-
-    public FilmService getFilmService() {
-        return filmService;
-    }
-
-    public LocalDate getReleaseDateLimit() {
-        return releaseDateLimit;
-    }
-
-    public void setReleaseDateLimit(LocalDate releaseDateLimit) {
-        this.releaseDateLimit = releaseDateLimit;
     }
 }
