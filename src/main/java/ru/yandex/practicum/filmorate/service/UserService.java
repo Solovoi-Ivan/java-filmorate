@@ -1,47 +1,52 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
+    public List<User> getUserList() {
+        return userStorage.getUserList();
+    }
+
+    public User getUserById(int userId) {
+        return userStorage.getUserById(userId);
+    }
+
+    public User createUser(User user) {
+        return userStorage.createUser(user);
+    }
+
+    public User updateUser(User user) {
+        return userStorage.updateUser(user);
+    }
+
     public void addFriend(int userId, int friendId) {
-        userStorage.getUsers().get(userId).getFriendsSet().add(friendId);
-        userStorage.getUsers().get(friendId).getFriendsSet().add(userId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        userStorage.getUsers().get(userId).getFriendsSet().remove(friendId);
-        userStorage.getUsers().get(friendId).getFriendsSet().remove(userId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     public List<User> getFriendList(int userId) {
-        List<User> friendList = new ArrayList<>();
-        for (int id : userStorage.getUsers().get(userId).getFriendsSet()) {
-            friendList.add(userStorage.getUsers().get(id));
-        }
-        return friendList;
+        return userStorage.getFriendList(userId);
     }
 
     public List<User> getCommonFriendList(int firstId, int secondId) {
-        List<User> list = new ArrayList<>();
-        for (User user : getFriendList(firstId)) {
-            if (getFriendList(secondId).contains(user)) {
-                list.add(user);
-            }
-        }
-        return list;
+        return userStorage.getCommonFriendList(firstId, secondId);
     }
 
-    public UserStorage getUserStorage() {
-        return userStorage;
+    public Map<Integer, User> getUsersMap() {
+        return userStorage.getUsersMap();
     }
 }

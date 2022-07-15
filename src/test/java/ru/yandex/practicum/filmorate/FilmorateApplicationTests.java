@@ -1,220 +1,217 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class FilmorateApplicationTests {
-    Film film = new Film();
-    User user = new User();
-    UserController uc = new UserController(new UserService(new InMemoryUserStorage()));
-    FilmController fc = new FilmController(uc, new FilmService(new InMemoryFilmStorage()));
+    private final UserStorage us;
+    private final FilmStorage fs;
+    User user1 = new User();
+    User user2 = new User();
+    User user3 = new User();
+
+    Film film1 = new Film();
+    Film film2 = new Film();
+    Film film3 = new Film();
 
     @Test
-    void createUserEmailValidationTest() {
-        user.setEmail("");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
-        user.setEmail("a");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
-        user.setEmail("a@mail.ru");
-        uc.createUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(1)
+    public void createUserTest() {
+        user1.setEmail("A@mail.ru");
+        user1.setLogin("AAA");
+        user1.setName("AAAA");
+        user1.setBirthday(LocalDate.of(2000, 1, 1));
+
+        User createdUser = us.createUser(user1);
+        assertEquals(createdUser, user1);
+        assertEquals(createdUser.getId(), 1);
     }
 
     @Test
-    void createUserLoginValidationTest() {
-        user.setLogin("");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
-        user.setLogin(" ");
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
-        user.setLogin("a");
-        uc.createUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(2)
+    public void updateUserTest() {
+        user2.setEmail("B@mail.ru");
+        user2.setLogin("BBB");
+        user2.setName("BBBB");
+        user2.setBirthday(LocalDate.of(2000, 1, 1));
+        user2.setId(1);
+
+        User updatedUser = us.updateUser(user2);
+        assertEquals(updatedUser, user2);
+        assertEquals(updatedUser.getId(), 1);
     }
 
     @Test
-    void createUserNameValidationTest() {
-        user.setName("");
-        uc.createUser(user);
-        assertEquals(uc.getUserService().getUserStorage().getUsers().get(user.getId()).getName(), user.getLogin());
+    @Order(3)
+    public void getUserListTest() {
+        user1.setEmail("A@mail.ru");
+        user1.setLogin("AAA");
+        user1.setName("AAAA");
+        user1.setBirthday(LocalDate.of(2000, 1, 1));
+
+        user2.setEmail("B@mail.ru");
+        user2.setLogin("BBB");
+        user2.setName("BBBB");
+        user2.setBirthday(LocalDate.of(2000, 1, 1));
+        user2.setId(1);
+
+        us.createUser(user1);
+        user1.setId(2);
+        assertEquals(user2, us.getUserList().get(0));
+        assertEquals(user1, us.getUserList().get(1));
+        assertEquals(2, us.getUserList().size());
     }
 
     @Test
-    void createUserBirthdayValidationTest() {
-        user.setBirthday(LocalDate.of(2989, 4, 17));
-        assertThrows(ValidationException.class, () -> uc.createUser(user));
-        user.setBirthday(LocalDate.of(1989, 4, 17));
-        uc.createUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(4)
+    public void getUserByIdTest() {
+        user2.setEmail("B@mail.ru");
+        user2.setLogin("BBB");
+        user2.setName("BBBB");
+        user2.setBirthday(LocalDate.of(2000, 1, 1));
+        user2.setId(1);
+        assertEquals(user2, us.getUserById(1));
     }
 
     @Test
-    void updateUserEmailValidationTest() {
-        uc.createUser(user);
-        user.setEmail("");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
-        user.setEmail("a");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
-        user.setEmail("a@mail.ru");
-        uc.updateUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(5)
+    public void addFriendTest() {
+        us.addFriend(1, 2);
+        assertTrue(us.getUserById(1).getFriendsSet().contains(2));
     }
 
     @Test
-    void updateUserLoginValidationTest() {
-        uc.createUser(user);
-        user.setLogin("");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
-        user.setLogin(" ");
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
-        user.setLogin("a");
-        uc.updateUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(6)
+    public void removeFriendTest() {
+        us.removeFriend(1, 2);
+        assertTrue(us.getUserById(1).getFriendsSet().isEmpty());
     }
 
     @Test
-    void updateUserNameValidationTest() {
-        uc.createUser(user);
-        user.setName("");
-        uc.updateUser(user);
-        assertEquals(uc.getUserService().getUserStorage().getUsers().get(user.getId()).getName(), user.getLogin());
+    @Order(7)
+    public void getFriendListTest() {
+        us.addFriend(1, 2);
+        assertEquals(2, us.getFriendList(1).get(0).getId());
+        assertEquals(1, us.getFriendList(1).size());
     }
 
     @Test
-    void updateUserBirthdayValidationTest() {
-        uc.createUser(user);
-        user.setBirthday(LocalDate.of(2989, 4, 17));
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
-        user.setBirthday(LocalDate.of(1989, 4, 17));
-        uc.updateUser(user);
-        assertTrue(uc.getUserService().getUserStorage().getUsers().containsValue(user));
+    @Order(8)
+    public void getCommonFriendListTest() {
+        user3.setEmail("C@mail.ru");
+        user3.setLogin("CCC");
+        user3.setName("CCCC");
+        user3.setBirthday(LocalDate.of(2000, 1, 1));
+        us.createUser(user3);
+        us.addFriend(3, 2);
+        assertEquals(2, us.getCommonFriendList(1, 3).get(0).getId());
+        assertEquals(1, us.getCommonFriendList(1, 3).size());
     }
 
     @Test
-    void updateUserIdValidationTest() {
-        uc.createUser(user);
-        user.setId(2);
-        assertThrows(ValidationException.class, () -> uc.updateUser(user));
+    @Order(9)
+    public void createFilm() {
+        film1.setName("AAA");
+        film1.setDescription("AAAA");
+        film1.setDuration(100);
+        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film1.setMpa(new MPA(1, null));
+
+        Film createdFilm = fs.createFilm(film1);
+        assertEquals(createdFilm, film1);
+        assertEquals(createdFilm.getId(), 1);
     }
 
     @Test
-    void createFilmNameValidationTest() {
-        film.setName("");
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
-        film.setName("a");
-        fc.createFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
+    @Order(10)
+    public void updateFilm() {
+        film2.setName("BBB");
+        film2.setDescription("BBBB");
+        film2.setDuration(100);
+        film2.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film2.setMpa(new MPA(1, null));
+        film2.setId(1);
+
+        Film updatedFilm = fs.updateFilm(film2);
+        assertEquals(updatedFilm, film2);
+        assertEquals(updatedFilm.getId(), 1);
     }
 
     @Test
-    void createFilmDescriptionValidationTest() {
-        StringBuilder value = new StringBuilder();
-        value.append("a".repeat(201));
-        film.setDescription(value.toString());
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
-        value = new StringBuilder();
-        value.append("a".repeat(200));
-        film.setDescription(value.toString());
-        fc.createFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
+    @Order(12)
+    public void getFilmsList() {
+        film1.setName("AAA");
+        film1.setDescription("AAAA");
+        film1.setDuration(100);
+        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film1.setMpa(new MPA(1, null));
+
+        film2.setName("BBB");
+        film2.setDescription("BBBB");
+        film2.setDuration(100);
+        film2.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film2.setMpa(new MPA(1, null));
+        film2.setId(1);
+
+        fs.createFilm(film1);
+        film1.setId(2);
+        assertEquals(film2, fs.getFilmsList().get(0));
+        assertEquals(film1, fs.getFilmsList().get(1));
+        assertEquals(2, fs.getFilmsList().size());
     }
 
     @Test
-    void createFilmReleaseDateValidationTest() {
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        fc.createFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
+    @Order(11)
+    public void getFilmById() {
+        film2.setName("BBB");
+        film2.setDescription("BBBB");
+        film2.setDuration(100);
+        film2.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film2.setMpa(new MPA(1, null));
+        film2.setId(1);
+
+        assertEquals(film2, fs.getFilmById(1));
     }
 
     @Test
-    void createFilmDurationValidationTest() {
-        film.setDuration(0);
-        assertThrows(ValidationException.class, () -> fc.createFilm(film));
-        film.setDuration(1);
-        fc.createFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
+    @Order(13)
+    public void putLike() {
+        fs.putLike(1, 1);
+        assertTrue(fs.getFilmById(1).getLikesSet().contains(1));
     }
 
     @Test
-    void updateFilmNameValidationTest() {
-        fc.createFilm(film);
-        film.setName("");
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
-        film.setName("a");
-        fc.updateFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
+    @Order(14)
+    public void removeLike() {
+        fs.removeLike(1, 1);
+        assertTrue(fs.getFilmById(1).getLikesSet().isEmpty());
     }
 
     @Test
-    void updateFilmDescriptionValidationTest() {
-        fc.createFilm(film);
-        StringBuilder value = new StringBuilder();
-        value.append("a".repeat(201));
-        film.setDescription(value.toString());
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
-        value = new StringBuilder();
-        value.append("a".repeat(200));
-        film.setDescription(value.toString());
-        fc.updateFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
-    }
-
-    @Test
-    void updateFilmReleaseDateValidationTest() {
-        fc.createFilm(film);
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        fc.updateFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
-    }
-
-    @Test
-    void updateFilmDurationValidationTest() {
-        fc.createFilm(film);
-        film.setDuration(0);
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
-        film.setDuration(1);
-        fc.updateFilm(film);
-        assertTrue(fc.getFilmService().getFilmStorage().getFilms().containsValue(film));
-    }
-
-    @Test
-    void updateFilmIdValidationTest() {
-        fc.createFilm(film);
-        film.setId(2);
-        assertThrows(ValidationException.class, () -> fc.updateFilm(film));
-    }
-
-    @BeforeEach
-    void testEnvironment() {
-        fc.getFilmService().getFilmStorage().getFilms().clear();
-        uc.getUserService().getUserStorage().getUsers().clear();
-
-        film.setName("A");
-        film.setDescription("AA");
-        film.setReleaseDate(LocalDate.of(1989, 4, 17));
-        film.setDuration(100);
-
-        user.setEmail("a@mail.ru");
-        user.setLogin("A");
-        user.setName("AA");
-        user.setBirthday(LocalDate.of(1989, 4, 17));
+    @Order(15)
+    public void getPopularFilms() {
+        assertEquals(fs.getFilmsList().get(0).getId(), 1);
+        fs.putLike(2, 1);
+        assertEquals(fs.getPopularFilms(10).get(0).getId(), 2);
     }
 }
