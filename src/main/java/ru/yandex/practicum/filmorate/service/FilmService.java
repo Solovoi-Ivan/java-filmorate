@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.filmGenres.FilmWithGenresStorage;
+import ru.yandex.practicum.filmorate.storage.films.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genres.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
+import ru.yandex.practicum.filmorate.storage.likes.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.mpaRatings.MPAStorage;
 
 import java.util.*;
 
@@ -18,37 +20,42 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final MPAStorage mpaStorage;
     private final GenreDbStorage genresStorage;
+    private final LikesStorage likesStorage;
 
-    public List<Film> getFilmsList() {
+    private final FilmWithGenresStorage filmWithGenresStorage;
+
+    public List<Film> getList() {
         List<Film> list = new ArrayList<>();
-        for (Film film : filmStorage.getFilmsList()) {
+        for (Film film : filmWithGenresStorage.genreIdFromDataBase(filmStorage.getList())) {
             list.add(addInfoFromGenreAndMPAStorages(film));
         }
         return list;
     }
 
-    public Film getFilmById(int id) {
-        return addInfoFromGenreAndMPAStorages(filmStorage.getFilmById(id));
+    public Film getById(int id) {
+        List<Film> list = new ArrayList<>();
+        list.add(filmStorage.getById(id));
+        return addInfoFromGenreAndMPAStorages(filmWithGenresStorage.genreIdFromDataBase(list).get(0));
     }
 
-    public Film createFilm(Film film) {
-        return filmStorage.createFilm(addInfoFromGenreAndMPAStorages(film));
+    public Film create(Film film) {
+        return filmWithGenresStorage.genreIdToDataBase(filmStorage.create(addInfoFromGenreAndMPAStorages(film)));
     }
 
-    public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(addInfoFromGenreAndMPAStorages(film));
+    public Film update(Film film) {
+        return filmWithGenresStorage.genreIdToDataBase(filmStorage.update(addInfoFromGenreAndMPAStorages(film)));
     }
 
     public void putLike(int filmId, int userId) {
-        filmStorage.putLike(filmId, userId);
+        likesStorage.putLike(filmId, userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        filmStorage.removeLike(filmId, userId);
+        likesStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopular(int count) {
+        return filmStorage.getPopular(count);
     }
 
     public Map<Integer, Genre> getGenresMap() {
@@ -59,8 +66,12 @@ public class FilmService {
         return mpaStorage.getMpaRatingMap();
     }
 
-    public Map<Integer, Film> getFilmsMap() {
-        return filmStorage.getFilmsMap();
+    public Map<Integer, Film> getMap() {
+        Map<Integer, Film> filmsMap = new HashMap<>();
+        for (Film film : getList()) {
+            filmsMap.put(film.getId(), film);
+        }
+        return filmsMap;
     }
 
     public Film addInfoFromGenreAndMPAStorages(Film film) {

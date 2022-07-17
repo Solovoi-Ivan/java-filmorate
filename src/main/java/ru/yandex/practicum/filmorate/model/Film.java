@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Data
+@NoArgsConstructor
 public class Film {
     private Set<Integer> likesSet = new HashSet<>();
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
@@ -27,7 +29,4 @@ public class Film {
     private int rate;
     @NotNull
     private MPA mpa;
-
-    public Film() {
-    }
 }
