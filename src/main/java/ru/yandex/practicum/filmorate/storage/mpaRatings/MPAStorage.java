@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.mpa;
+package ru.yandex.practicum.filmorate.storage.mpaRatings;
 
 import ru.yandex.practicum.filmorate.model.MPA;
 

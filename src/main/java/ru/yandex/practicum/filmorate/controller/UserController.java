@@ -23,32 +23,32 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public List<User> getUserList() {
-        return userService.getUserList();
+    public List<User> getList() {
+        return userService.getList();
     }
 
     @GetMapping("/users/{userId}")
-    public User getUserById(@PathVariable int userId) {
+    public User getById(@PathVariable int userId) {
         String text;
-        if (!userService.getUsersMap().containsKey(userId)) {
+        if (!userService.getMap().containsKey(userId)) {
             text = "Пользователь не найден";
             log.warn(text);
             throw new DataNotFoundException(text);
         } else {
-            return userService.getUserById(userId);
+            return userService.getById(userId);
         }
     }
 
     @PostMapping("/users")
-    public User createUser(@Valid @RequestBody User user) {
-        user = userService.createUser(userStorageValidation(user, "POST"));
+    public User create(@Valid @RequestBody User user) {
+        user = userService.create(userStorageValidation(user, "POST"));
         log.info("POST запрос обработан успешно");
         return user;
     }
 
     @PutMapping("/users")
-    public User updateUser(@Valid @RequestBody User user) {
-        user = userService.updateUser(userStorageValidation(user, "PUT"));
+    public User update(@Valid @RequestBody User user) {
+        user = userService.update(userStorageValidation(user, "PUT"));
         log.info("PUT запрос обработан успешно");
         return user;
     }
@@ -79,7 +79,7 @@ public class UserController {
 
     public User userStorageValidation(User user, String task) {
         String text;
-        if (task.equals("PUT") && !userService.getUsersMap().containsKey(user.getId())) {
+        if (task.equals("PUT") && !userService.getMap().containsKey(user.getId())) {
             text = "Обновление записи невозможно - пользователя с таким id нет";
             log.warn(text);
             throw new DataNotFoundException(text);
@@ -105,7 +105,7 @@ public class UserController {
 
     public void userServiceValidation(int firstId, int secondId, String task) {
         String text;
-        Map<Integer, User> users = userService.getUsersMap();
+        Map<Integer, User> users = userService.getMap();
         if (!users.containsKey(firstId) || secondId != 0 && !users.containsKey(secondId)) {
             text = "Пользователь не найден";
             log.warn(text);

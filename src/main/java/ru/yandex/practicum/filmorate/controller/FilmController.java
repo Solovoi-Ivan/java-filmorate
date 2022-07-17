@@ -28,32 +28,32 @@ public class FilmController {
     private final LocalDate releaseDateLimit = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/films")
-    public List<Film> getFilmsList() {
-        return filmService.getFilmsList();
+    public List<Film> getList() {
+        return filmService.getList();
     }
 
     @GetMapping("/films/{filmId}")
-    public Film getFilmById(@PathVariable int filmId) {
+    public Film getById(@PathVariable int filmId) {
         String text;
-        if (!filmService.getFilmsMap().containsKey(filmId)) {
+        if (!filmService.getMap().containsKey(filmId)) {
             text = "Фильм не найден";
             log.warn(text);
             throw new DataNotFoundException(text);
         } else {
-            return filmService.getFilmById(filmId);
+            return filmService.getById(filmId);
         }
     }
 
     @PostMapping("/films")
-    public Film createFilm(@Valid @RequestBody Film film) {
-        film = filmService.createFilm(filmStorageValidation(film, "create"));
+    public Film create(@Valid @RequestBody Film film) {
+        film = filmService.create(filmStorageValidation(film, "create"));
         log.info("POST запрос обработан успешно");
         return film;
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@Valid @RequestBody Film film) {
-        film = filmService.updateFilm(filmStorageValidation(film, "update"));
+    public Film update(@Valid @RequestBody Film film) {
+        film = filmService.update(filmStorageValidation(film, "update"));
         log.info("PUT запрос обработан успешно");
         return film;
     }
@@ -73,17 +73,17 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false) String count) {
+    public List<Film> getPopular(@RequestParam(required = false) String count) {
         String text;
-        if (filmService.getFilmsMap().isEmpty()) {
+        if (filmService.getMap().isEmpty()) {
             text = "Фильмы не найдены";
             log.warn(text);
             throw new DataNotFoundException(text);
         }
         if (count != null) {
-            return filmService.getPopularFilms(Integer.parseInt(count));
+            return filmService.getPopular(Integer.parseInt(count));
         } else {
-            return filmService.getPopularFilms(10);
+            return filmService.getPopular(10);
         }
     }
 
@@ -123,7 +123,7 @@ public class FilmController {
 
     public Film filmStorageValidation(Film film, String task) {
         String text;
-        if (task.equals("update") && !filmService.getFilmsMap().containsKey(film.getId())) {
+        if (task.equals("update") && !filmService.getMap().containsKey(film.getId())) {
             text = "Обновление записи невозможно - фильма с таким id нет";
             log.warn(text);
             throw new DataNotFoundException(text);
@@ -150,12 +150,12 @@ public class FilmController {
 
     public void filmServiceValidation(int filmId, int userId) {
         String text;
-        if (!filmService.getFilmsMap().containsKey(filmId)) {
+        if (!filmService.getMap().containsKey(filmId)) {
             text = "Фильм не найден";
             log.warn(text);
             throw new DataNotFoundException(text);
         }
-        if (!userController.getUserService().getUsersMap().containsKey(userId)) {
+        if (!userController.getUserService().getMap().containsKey(userId)) {
             text = "Пользователь не найден";
             log.warn(text);
             throw new DataNotFoundException(text);

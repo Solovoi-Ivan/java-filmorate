@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.storage.users;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,17 +14,17 @@ public class InMemoryUserStorage implements UserStorage {
     Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public List<User> getUserList() {
+    public List<User> getList() {
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public User getUserById(int userId) {
+    public User getById(int userId) {
         return users.get(userId);
     }
 
     @Override
-    public User createUser(User user) {
+    public User create(User user) {
         userId++;
         user.setId(userId);
         users.put(user.getId(), user);
@@ -32,31 +32,27 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public User update(User user) {
         users.put(user.getId(), user);
         return user;
     }
 
-    @Override
     public void addFriend(int userId, int friendId) {
         users.get(userId).getFriendsSet().add(friendId);
     }
 
-    @Override
     public void removeFriend(int userId, int friendId) {
         users.get(userId).getFriendsSet().remove(friendId);
     }
 
-    @Override
     public List<User> getFriendList(int userId) {
         List<User> friendList = new ArrayList<>();
-        for (int id : getUserById(userId).getFriendsSet()) {
-            friendList.add(getUserById(id));
+        for (int id : getById(userId).getFriendsSet()) {
+            friendList.add(getById(id));
         }
         return friendList;
     }
 
-    @Override
     public List<User> getCommonFriendList(int firstId, int secondId) {
         List<User> list = new ArrayList<>();
         for (User user : getFriendList(firstId)) {
@@ -67,7 +63,6 @@ public class InMemoryUserStorage implements UserStorage {
         return list;
     }
 
-    @Override
     public Map<Integer, User> getUsersMap() {
         return users;
     }
