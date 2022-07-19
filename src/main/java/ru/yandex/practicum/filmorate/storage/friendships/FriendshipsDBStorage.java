@@ -20,20 +20,20 @@ public class FriendshipsDBStorage implements FriendshipsStorage {
     }
 
     @Override
-    public void addFriendToDataBase(int userId, int friendId) {
+    public void addFriendToDB(int userId, int friendId) {
         String sqlQuery = "insert into FRIENDSHIPS (first_user_id, second_user_id) " +
                 "values (?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId);
     }
 
     @Override
-    public void removeFriendFromDataBase(int userId, int friendId) {
+    public void removeFriendFromDB(int userId, int friendId) {
         String sqlQuery = "delete from FRIENDSHIPS where first_user_id = ? and second_user_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
     }
 
     @Override
-    public List<User> addFriendsInfoFromDataBaseToList(List<User> list) {
+    public List<User> addFriendsInfoFromDBToList(List<User> list) {
         String sqlQuery = "select second_user_id from FRIENDSHIPS where first_user_id = ?";
         for (User user : list) {
             user.getFriendsSet().addAll(jdbcTemplate.query(sqlQuery, this::mapRowToFriendId, user.getId()));

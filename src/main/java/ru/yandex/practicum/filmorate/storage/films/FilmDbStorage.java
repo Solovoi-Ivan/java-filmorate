@@ -30,9 +30,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film getById(int id) {
+    public List<Film> getById(int id) {
         String sqlQuery = "select * from FILMS where film_id = ?";
-        return addLikesInfo(jdbcTemplate.query(sqlQuery, FilmDbStorage::mapRowToFilm, id)).get(0);
+        return addLikesInfo(jdbcTemplate.query(sqlQuery, FilmDbStorage::mapRowToFilm, id));
     }
 
     @Override

@@ -7,5 +7,5 @@ import java.util.List;
 public interface FilmWithGenresStorage {
     public Film genreIdToDataBase(Film film);
 
-    public List<Film> genreIdFromDataBase(List<Film> films);
+    public List<Film> genreIdFromDB(List<Film> films);
 }

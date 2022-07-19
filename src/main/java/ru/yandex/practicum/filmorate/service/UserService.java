@@ -18,13 +18,11 @@ public class UserService {
     private final FriendshipsStorage friendshipsStorage;
 
     public List<User> getList() {
-        return friendshipsStorage.addFriendsInfoFromDataBaseToList(userStorage.getList());
+        return friendshipsStorage.addFriendsInfoFromDBToList(userStorage.getList());
     }
 
     public User getById(int userId) {
-        List<User> list = new ArrayList<>();
-        list.add(userStorage.getById(userId));
-        return friendshipsStorage.addFriendsInfoFromDataBaseToList(list).get(0);
+        return friendshipsStorage.addFriendsInfoFromDBToList(userStorage.getById(userId)).get(0);
     }
 
     public User create(User user) {
@@ -36,11 +34,11 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        friendshipsStorage.addFriendToDataBase(userId, friendId);
+        friendshipsStorage.addFriendToDB(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        friendshipsStorage.removeFriendFromDataBase(userId, friendId);
+        friendshipsStorage.removeFriendFromDB(userId, friendId);
     }
 
     public List<User> getFriendList(int userId) {

@@ -97,27 +97,27 @@ class FilmorateApplicationTests {
         user2.setName("BBBB");
         user2.setBirthday(LocalDate.of(2000, 1, 1));
         user2.setId(1);
-        assertEquals(user2, us.getById(1));
+        assertEquals(user2, us.getById(1).get(0));
     }
 
     @Test
     @Order(5)
     public void addFriendTest() {
-        frs.addFriendToDataBase(1, 2);
+        frs.addFriendToDB(1, 2);
         assertTrue(userService.getById(1).getFriendsSet().contains(2));
     }
 
     @Test
     @Order(6)
     public void removeFriendTest() {
-        frs.removeFriendFromDataBase(1, 2);
+        frs.removeFriendFromDB(1, 2);
         assertTrue(userService.getById(1).getFriendsSet().isEmpty());
     }
 
     @Test
     @Order(7)
     public void getFriendListTest() {
-        frs.addFriendToDataBase(1, 2);
+        frs.addFriendToDB(1, 2);
 
 
         assertEquals(2, userService.getFriendList(1).get(0).getId());
@@ -132,7 +132,7 @@ class FilmorateApplicationTests {
         user3.setName("CCCC");
         user3.setBirthday(LocalDate.of(2000, 1, 1));
         us.create(user3);
-        frs.addFriendToDataBase(3, 2);
+        frs.addFriendToDB(3, 2);
         assertEquals(2, userService.getCommonFriendList(1, 3).get(0).getId());
         assertEquals(1, userService.getCommonFriendList(1, 3).size());
     }
@@ -199,21 +199,21 @@ class FilmorateApplicationTests {
         film2.setMpa(new MPA(1, null));
         film2.setId(1);
 
-        assertEquals(film2, fs.getById(1));
+        assertEquals(film2, fs.getById(1).get(0));
     }
 
     @Test
     @Order(13)
     public void putLike() {
         ls.putLike(1, 1);
-        assertTrue(fs.getById(1).getLikesSet().contains(1));
+        assertTrue(fs.getById(1).get(0).getLikesSet().contains(1));
     }
 
     @Test
     @Order(14)
     public void removeLike() {
         ls.removeLike(1, 1);
-        assertTrue(fs.getById(1).getLikesSet().isEmpty());
+        assertTrue(fs.getById(1).get(0).getLikesSet().isEmpty());
     }
 
     @Test

@@ -33,7 +33,7 @@ public class FilmWithGenresStorageDB implements FilmWithGenresStorage {
     }
 
     @Override
-    public List<Film> genreIdFromDataBase(List<Film> films) {
+    public List<Film> genreIdFromDB(List<Film> films) {
         for (Film film : films) {
             String sqlQuery = "select fg.film_id, fg.genre_id, g.genre_type " +
                     "from FILM_GENRES AS fg join GENRES as g on fg.genre_id = g.genre_id where film_id = ?";

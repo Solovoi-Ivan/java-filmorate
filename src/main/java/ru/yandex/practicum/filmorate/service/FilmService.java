@@ -26,16 +26,14 @@ public class FilmService {
 
     public List<Film> getList() {
         List<Film> list = new ArrayList<>();
-        for (Film film : filmWithGenresStorage.genreIdFromDataBase(filmStorage.getList())) {
+        for (Film film : filmWithGenresStorage.genreIdFromDB(filmStorage.getList())) {
             list.add(addInfoFromGenreAndMPAStorages(film));
         }
         return list;
     }
 
     public Film getById(int id) {
-        List<Film> list = new ArrayList<>();
-        list.add(filmStorage.getById(id));
-        return addInfoFromGenreAndMPAStorages(filmWithGenresStorage.genreIdFromDataBase(list).get(0));
+        return addInfoFromGenreAndMPAStorages(filmWithGenresStorage.genreIdFromDB(filmStorage.getById(id)).get(0));
     }
 
     public Film create(Film film) {
